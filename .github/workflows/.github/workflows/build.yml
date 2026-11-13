@@ -1,0 +1,551 @@
+name: Build APK
+on: workflow_dispatch
+  build:
+    runs-to: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Create project
+        run: |
+          mkdir -p SaurabhBhaiya/app/src/main/java/com/saurabh/bhaiya SaurabhBhaiya/app/src/main/res/layout SaurabhBhaiya/app/src/main/res/values SaurabhBhaiya/app/src/main/res/drawable
+          cd SaurabhBhaiya
+          cat > settings.gradle.kts <<'EOF'
+          pluginManagement {
+              repositories { google(); mavenCentral(); gradlePluginPortal() }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
+          rootProject.name = "SaurabhBhaiya"
+          include(":app")
+          EOF
+          cat > build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application") version "8.5.2" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+          }
+          EOF
+          cat > gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          EOF
+          cat > app/build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+          }
+          android {
+              namespace = "com.saurabh.bhaiya"
+              compileSdk = 34
+              defaultConfig {
+                  applicationId = "com.saurabh.bhaiya"
+                  minSdk = 24
+                  targetSdk = 34
+                  versionCode = 1
+                  versionName = "1.0"
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions { jvmTarget = "17" }
+          }
+          dependencies {
+              implementation("androidx.appcompat:appcompat:1.7.0")
+              implementation("com.google.android.material:material:1.12.0")
+          }
+          EOF
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.RECORD_AUDIO" />
+              <queries>
+                  <intent>
+                      <action android:name="android.intent.action.MAIN" />
+                      <category android:name="android.intent.category.LAUNCHER" />
+                  </intent>
+                  <intent>
+                      <action android:name="android.speech.RecognitionService" />
+                  </intent>
+                  <intent>
+                      <action android:name="android.intent.action.TTS_SERVICE" />
+                  </intent>
+              </queries>
+              <application
+                  android:allowBackup="false"
+                  android:icon="@drawable/ic_launcher"
+                  android:label="@string/app_name"
+                  android:theme="@style/Theme.Bhaiya">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:screenOrientation="portrait">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+          cat > app/src/main/res/values/strings.xml <<'EOF'
+          <resources>
+              <string name="app_name">SAURABH BHAIYA</string>
+          </resources>
+          EOF
+          cat > app/src/main/res/values/colors.xml <<'EOF'
+          <resources>
+              <color name="bg">#06140D</color>
+              <color name="card">#0E2A1B</color>
+              <color name="green">#2ECC71</color>
+              <color name="green_dark">#00240F</color>
+              <color name="text">#E8FFF1</color>
+              <color name="text_dim">#8FBFA2</color>
+          </resources>
+          EOF
+          cat > app/src/main/res/values/themes.xml <<'EOF'
+          <resources>
+              <style name="Theme.Bhaiya" parent="Theme.Material3.Dark.NoActionBar">
+                  <item name="colorPrimary">@color/green</item>
+                  <item name="colorOnPrimary">@color/green_dark</item>
+                  <item name="android:windowBackground">@color/bg</item>
+                  <item name="android:statusBarColor">@color/bg</item>
+                  <item name="android:navigationBarColor">@color/bg</item>
+              </style>
+          </resources>
+          EOF
+          cat > app/src/main/res/drawable/ic_mic.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp"
+              android:viewportWidth="24" android:viewportHeight="24">
+              <path
+                  android:fillColor="#00240F"
+                  android:pathData="M12,14c1.66,0 3,-1.34 3,-3V5c0,-1.66 -1.34,-3 -3,-3S9,3.34 9,5v6c0,1.66 1.34,3 3,3zM17.3,11c0,3 -2.54,5.1 -5.3,5.1S6.7,14 6.7,11H5c0,3.41 2.72,6.23 6,6.72V21h2v-3.28c3.28,-0.48 6,-3.3 6,-6.72h-1.7z" />
+          </vector>
+          EOF
+          cat > app/src/main/res/drawable/bg_mic.xml <<'EOF'
+          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+              <solid android:color="@color/green" />
+          </shape>
+          EOF
+          cat > app/src/main/res/drawable/ic_launcher.xml <<'EOF'
+          <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+              <item>
+                  <shape android:shape="oval">
+                      <solid android:color="#2ECC71" />
+                  </shape>
+              </item>
+              <item
+                  android:drawable="@drawable/ic_mic"
+                  android:left="18dp" android:top="18dp" android:right="18dp" android:bottom="18dp" />
+          </layer-list>
+          EOF
+          cat > app/src/main/res/layout/activity_main.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/bg"
+              android:orientation="vertical"
+              android:padding="16dp">
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:gravity="center_vertical"
+                  android:orientation="horizontal">
+                  <TextView
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:text="SAURABH BHAIYA"
+                      android:textColor="@color/green"
+                      android:textSize="22sp"
+                      android:textStyle="bold" />
+                  <com.google.android.material.button.MaterialButton
+                      android:id="@+id/btnKey"
+                      style="?attr/materialButtonOutlinedStyle"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="API Key" />
+              </LinearLayout>
+              <com.google.android.material.button.MaterialButtonToggleGroup
+                  android:id="@+id/toggle"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="12dp"
+                  app:selectionRequired="true"
+                  app:singleSelection="true">
+                  <com.google.android.material.button.MaterialButton
+                      android:id="@+id/btnMr"
+                      style="?attr/materialButtonOutlinedStyle"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:text="मराठी" />
+                  <com.google.android.material.button.MaterialButton
+                      android:id="@+id/btnHi"
+                      style="?attr/materialButtonOutlinedStyle"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:text="हिंदी" />
+                  <com.google.android.material.button.MaterialButton
+                      android:id="@+id/btnEn"
+                      style="?attr/materialButtonOutlinedStyle"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:text="English" />
+              </com.google.android.material.button.MaterialButtonToggleGroup>
+              <ScrollView
+                  android:id="@+id/scroll"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_marginTop="12dp"
+                  android:layout_weight="1"
+                  android:background="@color/card"
+                  android:padding="12dp">
+                  <TextView
+                      android:id="@+id/chat"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="माइक दाबा आणि बोला"
+                      android:textColor="@color/text"
+                      android:textSize="16sp" />
+              </ScrollView>
+              <TextView
+                  android:id="@+id/status"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="8dp"
+                  android:gravity="center"
+                  android:text="तयार"
+                  android:textColor="@color/text_dim" />
+              <ImageButton
+                  android:id="@+id/btnMic"
+                  android:layout_width="88dp"
+                  android:layout_height="88dp"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginTop="8dp"
+                  android:background="@drawable/bg_mic"
+                  android:contentDescription="Microphone"
+                  android:padding="24dp"
+                  android:scaleType="fitCenter"
+                  android:src="@drawable/ic_mic" />
+          </LinearLayout>
+          EOF
+          cat > app/src/main/java/com/saurabh/bhaiya/MainActivity.kt <<'EOF'
+          package com.saurabh.bhaiya
+
+          import android.Manifest
+          import android.content.Intent
+          import android.content.pm.PackageManager
+          import android.os.Bundle
+          import android.speech.RecognitionListener
+          import android.speech.RecognizerIntent
+          import android.speech.SpeechRecognizer
+          import android.speech.tts.TextToSpeech
+          import android.view.View
+          import android.widget.EditText
+          import android.widget.ImageButton
+          import android.widget.ScrollView
+          import android.widget.TextView
+          import androidx.activity.result.contract.ActivityResultContracts
+          import androidx.appcompat.app.AlertDialog
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.core.content.ContextCompat
+          import com.google.android.material.button.MaterialButtonToggleGroup
+          import org.json.JSONArray
+          import org.json.JSONObject
+          import java.net.HttpURLConnection
+          import java.net.URL
+          import java.util.Locale
+
+          class MainActivity : AppCompatActivity() {
+
+              private val apiUrl = "https://api.anthropic.com/v1/messages"
+              private val model = "claude-haiku-5-5"
+              private val systemPrompt =
+                  "You are SAURABH BHAIYA, a friendly male voice assistant. " +
+                  "Always reply in the same language the user spoke (Marathi, Hindi or English). " +
+                  "Keep answers short: 1 to 3 simple spoken sentences. No markdown, no emojis, no lists."
+
+              private lateinit var tts: TextToSpeech
+              private var ttsReady = false
+              private var recognizer: SpeechRecognizer? = null
+              private var listening = false
+              private var langTag = "mr-IN"
+              private val history = mutableListOf<Pair<String, String>>()
+
+              private lateinit var chat: TextView
+              private lateinit var status: TextView
+              private lateinit var scroll: ScrollView
+              private var firstMessage = true
+
+              private val micPermission =
+                  registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+                      if (ok) startListening() else setStatus("माइक परवानगी हवी आहे")
+                  }
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  setContentView(R.layout.activity_main)
+                  chat = findViewById(R.id.chat)
+                  status = findViewById(R.id.status)
+                  scroll = findViewById(R.id.scroll)
+                  tts = TextToSpeech(this) { s -> ttsReady = (s == TextToSpeech.SUCCESS) }
+
+                  val toggle = findViewById<MaterialButtonToggleGroup>(R.id.toggle)
+                  toggle.check(R.id.btnMr)
+                  toggle.addOnButtonCheckedListener { _, id, checked ->
+                      if (checked) langTag = when (id) {
+                          R.id.btnHi -> "hi-IN"
+                          R.id.btnEn -> "en-IN"
+                          else -> "mr-IN"
+                      }
+                  }
+                  findViewById<ImageButton>(R.id.btnMic).setOnClickListener {
+                      if (listening) recognizer?.stopListening() else checkPermissionAndListen()
+                  }
+                  findViewById<View>(R.id.btnKey).setOnClickListener { showKeyDialog() }
+              }
+
+              override fun onDestroy() {
+                  recognizer?.destroy()
+                  tts.stop(); tts.shutdown()
+                  super.onDestroy()
+              }
+
+              private fun checkPermissionAndListen() {
+                  if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                      == PackageManager.PERMISSION_GRANTED
+                  ) startListening() else micPermission.launch(Manifest.permission.RECORD_AUDIO)
+              }
+
+              private fun startListening() {
+                  if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+                      setStatus("Google Speech सेवा उपलब्ध नाही (Google app अपडेट करा)")
+                      return
+                  }
+                  tts.stop()
+                  recognizer?.destroy()
+                  recognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
+                      setRecognitionListener(object : RecognitionListener {
+                          override fun onReadyForSpeech(p: Bundle?) { listening = true; setStatus("ऐकत आहे… बोला") }
+                          override fun onBeginningOfSpeech() {}
+                          override fun onRmsChanged(v: Float) {}
+                          override fun onBufferReceived(b: ByteArray?) {}
+                          override fun onEndOfSpeech() { setStatus("समजून घेत आहे…") }
+                          override fun onError(e: Int) { listening = false; setStatus("परत प्रयत्न करा (कोड $e)") }
+                          override fun onPartialResults(p: Bundle?) {}
+                          override fun onEvent(t: Int, p: Bundle?) {}
+                          override fun onResults(r: Bundle?) {
+                              listening = false
+                              val text = r?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
+                              if (text.isNullOrBlank()) setStatus("काही ऐकू आले नाही") else handleUserText(text)
+                          }
+                      })
+                  }
+                  val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                      putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                      putExtra(RecognizerIntent.EXTRA_LANGUAGE, langTag)
+                  }
+                  recognizer?.startListening(i)
+              }
+
+              private fun handleUserText(text: String) {
+                  addChat("तुम्ही", text)
+                  if (tryOpenApp(text)) return
+                  askAI(text)
+              }
+
+              private val triggers = listOf(
+                  "open", "launch", "ओपन", "उघड", "खोल", "चालू कर", "सुरू कर", "शुरू कर"
+              )
+              private val fillers = listOf(
+                  "the", "app", "please", "ॲप", "अॅप", "ऐप", "एप", "प्लीज", "कर", "करा", "करो", "दो", "दे", "द्या", "ना"
+              )
+              private val aliases = mapOf(
+                  "व्हाट्सएप" to "whatsapp", "व्हॉट्सॲप" to "whatsapp", "व्हॉट्सअॅप" to "whatsapp", "व्हाट्सऐप" to "whatsapp",
+                  "यूट्यूब" to "youtube", "यूट्युब" to "youtube",
+                  "क्रोम" to "chrome", "गुगल" to "google", "गूगल" to "google",
+                  "कॅमेरा" to "camera", "कैमरा" to "camera",
+                  "सेटिंग्ज" to "settings", "सेटिंग" to "settings",
+                  "कॅल्क्युलेटर" to "calculator", "कैलकुलेटर" to "calculator",
+                  "गॅलरी" to "gallery", "गैलरी" to "gallery",
+                  "फोन" to "phone", "मेसेज" to "messages", "मैसेज" to "messages",
+                  "इन्स्टाग्राम" to "instagram", "इंस्टाग्राम" to "instagram",
+                  "फेसबुक" to "facebook", "टेलिग्राम" to "telegram", "मॅप" to "maps", "मैप" to "maps"
+              )
+
+              private fun tryOpenApp(spoken: String): Boolean {
+                  var name = spoken.lowercase(Locale.ROOT)
+                  if (triggers.none { name.contains(it) }) return false
+                  triggers.forEach { name = name.replace(it, " ") }
+                  fillers.forEach { name = name.replace(Regex("(^|\\s)" + Regex.escape(it) + "(\\s|$)"), " ") }
+                  name = name.trim()
+                  aliases.forEach { (k, v) -> if (name.contains(k)) name = v }
+                  if (name.length < 2) return false
+
+                  val pm = packageManager
+                  val launcher = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                  val match = pm.queryIntentActivities(launcher, 0)
+                      .map { it.loadLabel(pm).toString() to it.activityInfo.packageName }
+                      .firstOrNull { (label, _) -> label.lowercase(Locale.ROOT).contains(name) }
+                      ?: return false
+
+                  val (label, pkg) = match
+                  val q = msg("$label उघडू का?", "$label खोलूँ?", "Open $label?")
+                  addChat("भैया", q)
+                  speak(q)
+                  AlertDialog.Builder(this)
+                      .setTitle(q)
+                      .setPositiveButton(msg("हो", "हाँ", "Yes")) { _, _ ->
+                          pm.getLaunchIntentForPackage(pkg)?.let { startActivity(it) }
+                      }
+                      .setNegativeButton(msg("नाही", "नहीं", "No"), null)
+                      .show()
+                  return true
+              }
+
+              private fun msg(mr: String, hi: String, en: String) =
+                  when (langTag) { "hi-IN" -> hi; "en-IN" -> en; else -> mr }
+
+              private fun askAI(text: String) {
+                  val key = getSharedPreferences("bhaiya", MODE_PRIVATE).getString("key", "") ?: ""
+                  if (key.isBlank()) {
+                      setStatus("आधी API Key टाका")
+                      showKeyDialog()
+                      return
+                  }
+                  setStatus("विचार करत आहे…")
+                  history.add("user" to text)
+                  Thread {
+                      val result = runCatching { callApi(key) }
+                      runOnUiThread {
+                          result.onSuccess { reply ->
+                              history.add("assistant" to reply)
+                              addChat("भैया", reply)
+                              setStatus("तयार")
+                              speak(reply)
+                          }.onFailure { e ->
+                              history.removeAt(history.lastIndex)
+                              setStatus("चूक: ${e.message}")
+                          }
+                      }
+                  }.start()
+              }
+
+              private fun callApi(key: String): String {
+                  var h = history.takeLast(10)
+                  if (h.first().first == "assistant") h = h.drop(1)
+                  val msgs = JSONArray()
+                  h.forEach { (r, c) -> msgs.put(JSONObject().put("role", r).put("content", c)) }
+                  val body = JSONObject()
+                      .put("model", model)
+                      .put("max_tokens", 400)
+                      .put("system", systemPrompt)
+                      .put("messages", msgs)
+
+                  val con = URL(apiUrl).openConnection() as HttpURLConnection
+                  try {
+                      con.requestMethod = "POST"
+                      con.connectTimeout = 20000
+                      con.readTimeout = 40000
+                      con.doOutput = true
+                      con.setRequestProperty("content-type", "application/json")
+                      con.setRequestProperty("x-api-key", key)
+                      con.setRequestProperty("anthropic-version", "2023-06-01")
+                      con.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
+
+                      val code = con.responseCode
+                      val stream = if (code in 200..299) con.inputStream else con.errorStream
+                      val text = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
+                      if (code !in 200..299) throw Exception("HTTP $code ${text.take(120)}")
+
+                      val parts = JSONObject(text).getJSONArray("content")
+                      val sb = StringBuilder()
+                      for (i in 0 until parts.length()) {
+                          val p = parts.getJSONObject(i)
+                          if (p.optString("type") == "text") sb.append(p.getString("text"))
+                      }
+                      return sb.toString().trim().ifEmpty { "..." }
+                  } finally {
+                      con.disconnect()
+                  }
+              }
+
+              private fun speak(text: String) {
+                  if (!ttsReady) return
+                  val devanagari = text.any { it in '\u0900'..'\u097F' }
+                  val loc = when {
+                      !devanagari -> Locale("en", "IN")
+                      langTag == "hi-IN" -> Locale("hi", "IN")
+                      else -> Locale("mr", "IN")
+                  }
+                  val r = tts.setLanguage(loc)
+                  if (devanagari && (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED)) {
+                      tts.setLanguage(Locale("hi", "IN"))
+                  }
+                  pickMaleVoice()
+                  tts.setPitch(0.85f)
+                  tts.setSpeechRate(0.95f)
+                  tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "bhaiya")
+              }
+
+              private fun pickMaleVoice() {
+                  try {
+                      val lang = tts.language?.language ?: return
+                      val voices = tts.voices?.filter {
+                          it.locale.language == lang && !it.features.contains("notInstalled")
+                      } ?: return
+                      val male = voices.firstOrNull {
+                          val n = it.name.lowercase(Locale.ROOT)
+                          n.contains("male") && !n.contains("female")
+                      }
+                      if (male != null) tts.voice = male
+                  } catch (_: Exception) { }
+              }
+
+              private fun showKeyDialog() {
+                  val prefs = getSharedPreferences("bhaiya", MODE_PRIVATE)
+                  val input = EditText(this).apply {
+                      hint = "sk-ant-..."
+                      setText(prefs.getString("key", ""))
+                      setSingleLine()
+                  }
+                  AlertDialog.Builder(this)
+                      .setTitle("Anthropic API Key")
+                      .setView(input)
+                      .setPositiveButton("सेव्ह") { _, _ ->
+                          prefs.edit().putString("key", input.text.toString().trim()).apply()
+                          setStatus("Key सेव्ह झाली")
+                      }
+                      .setNegativeButton("रद्द", null)
+                      .show()
+              }
+
+              private fun addChat(who: String, text: String) {
+                  if (firstMessage) { chat.text = ""; firstMessage = false }
+                  chat.append("$who: $text\n\n")
+                  scroll.post { scroll.fullScroll(View.FOCUS_DOWN) }
+              }
+
+              private fun setStatus(s: String) { status.text = s }
+          }
+          EOF
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: "8.7"
+      - name: Build
+        run: gradle assembleDebug --no-daemon
+        working-directory: SaurabhBhaiya
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SaurabhBhaiya-APK
+          path: SaurabhBhaiya/app/build/outputs/apk/debug/app-debug.apk
